@@ -1,0 +1,15 @@
+# GitHub Linguist language classification.
+# Keep the copied STM32 HAL/CMSIS source in the repository, but exclude it from
+# language statistics so the project is shown as the application language.
+Drivers/** linguist-vendored
+
+# Project-owned firmware code should be counted as C++.
+src/** linguist-language=C++
+include/** linguist-language=C++
+
+# Supporting files are not the primary repository language.
+docs/** linguist-documentation
+README.md linguist-documentation
+tools/** linguist-vendored
+linker/** linguist-vendored
+.vscode/** linguist-vendored

@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "J-Link Debug STM32F407ZE (CDT GDB)",
+      "type": "gdbtarget",
+      "request": "attach",
+      "program": "${workspaceFolder}\\build\\firmware.elf",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Debug: Build + Start J-Link GDB Server",
+      "postDebugTask": "Stop J-Link GDB Server",
+      "gdb": "${config:stm32.gccPath}\\arm-none-eabi-gdb.exe",
+      "gdbAsync": true,
+      "gdbNonStop": false,
+      "verbose": false,
+      "target": {
+        "type": "remote",
+        "parameters": [
+          "localhost:2331"
+        ]
+      },
+      "initCommands": [
+        "set confirm off",
+        "set pagination off",
+        "monitor reset",
+        "monitor halt",
+        "load",
+        "break main",
+        "monitor reset",
+        "monitor halt"
+      ],
+      "preRunCommands": []
+    }
+  ]
+}

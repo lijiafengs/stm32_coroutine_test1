@@ -1,0 +1,107 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Firmware (GCC)",
+      "detail": "Compile firmware. Outputs build/firmware.elf, .hex, and .bin.",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\tools\\build.ps1",
+        "-Toolchain",
+        "${config:stm32.gccPath}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": "$gcc"
+    },
+    {
+      "label": "Start J-Link GDB Server",
+      "detail": "Start J-Link GDB Server and return once it is waiting for GDB.",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\tools\\start-jlink-gdbserver.ps1",
+        "-JLinkGdbServer",
+        "${config:stm32.jlinkGdbServer}",
+        "-Device",
+        "STM32F407ZE",
+        "-Interface",
+        "SWD",
+        "-Speed",
+        "2000",
+        "-Port",
+        "2331"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug: Build + Start J-Link GDB Server",
+      "detail": "Build firmware, then start J-Link GDB Server for the debugger.",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build Firmware (GCC)",
+        "Start J-Link GDB Server"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop J-Link GDB Server",
+      "detail": "Stop any J-Link GDB Server process using PowerShell.",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "Get-Process JLinkGDBServerCL -ErrorAction SilentlyContinue | Stop-Process -Force"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean Build Output",
+      "detail": "Delete the local build directory.",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "if (Test-Path '${workspaceFolder}\\build') { Remove-Item -Recurse -Force '${workspaceFolder}\\build' }"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

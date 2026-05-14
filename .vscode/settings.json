@@ -1,0 +1,4 @@
+{
+  "stm32.gccPath": "C:\\SysGCC\\arm-eabi\\bin",
+  "stm32.jlinkGdbServer": "C:\\Program Files (x86)\\SEGGER\\JLink_V490e\\JLinkGDBServerCL.exe"
+}

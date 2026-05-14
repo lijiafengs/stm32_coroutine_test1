@@ -158,21 +158,21 @@ J-Link Debug STM32F407ZE (CDT GDB)
 可以在 Watch 窗口添加：
 
 ```cpp
-app::g_diag
-app::g_diag.loop_count
-app::g_diag.frames_ok
-app::g_diag.command_started
-app::g_diag.motor_started
-app::g_diag.motor_completed
-app::g_diag.ack_ok
-app::g_diag.scheduler_resumes
-app::g_diag.scheduler_timeouts
+app::g_diagnostics
+app::g_diagnostics.m_loopCount
+app::g_diagnostics.m_framesOk
+app::g_diagnostics.m_commandStarted
+app::g_diagnostics.m_motorStarted
+app::g_diagnostics.m_motorCompleted
+app::g_diagnostics.m_ackOk
+app::g_diagnostics.m_schedulerResumes
+app::g_diagnostics.m_schedulerTimeouts
 ```
 
 当前 demo 在启动时会注入一帧内存模拟的 `MoveStep` 指令。正常运行后，典型现象是：
 
-- `frames_ok` 变为 `1`。
-- `command_started` 变为 `1`。
+- `m_framesOk` 变为 `1`。
+- `m_commandStarted` 变为 `1`。
 - `motor_started` 变为 `1`。
 - `motor_completed` 变为 `1`。
 - `ack_ok` 变为 `1`。

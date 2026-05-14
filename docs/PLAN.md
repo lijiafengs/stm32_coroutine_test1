@@ -20,11 +20,11 @@
 - 协程框架：
   - `Task<void>` 基于 C++20 coroutine handle。
   - 固定任务槽池，不用 heap、异常、RTTI。
-  - `Scheduler::poll()` 在主循环恢复 ready 协程。
+  - `Scheduler::Poll()` 在主循环恢复 ready 协程。
   - `co_await WaitFlag` / `co_await MotorDone` 实现非阻塞等待。
 - 指令和电机示例：
-  - `CommandDispatcher` 按 opcode 调用 `Commands::moveStep()`。
-  - `moveStep()`：解析 payload -> `GetMotor(1).move(100)` -> 等待完成 -> ACK。
+  - `CommandDispatcher` 按 opcode 调用 `Commands::MoveStep()`。
+  - `MoveStep()`：解析 payload -> `GetMotor(1).Move(100)` -> 等待完成 -> ACK。
   - `SimMotor` 用 tick 模拟 busy/done；后续真实电机只替换 `IMotor` 实现。
 
 ## Test Plan
@@ -33,7 +33,7 @@
 - 板上调试：
   - VS Code 启动 J-Link 调试配置。
   - 下载到 STM32F407ZET6。
-  - 断点检查 `main`、`CommandDispatcher::dispatch`、`Commands::moveStep`、`Scheduler::poll`。
+  - 断点检查 `main`、`CommandDispatcher::Dispatch`、`Commands::MoveStep`、`Scheduler::Poll`。
   - 运行后确认 demo 指令启动、电机等待期间主循环不阻塞、完成后 ACK 写入。
 - 错误场景：CRC 错、未知 opcode、任务槽池满、电机超时均返回明确状态。
 

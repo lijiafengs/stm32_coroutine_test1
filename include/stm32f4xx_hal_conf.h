@@ -1,8 +1,16 @@
+/**
+* @brief Provides the local STM32F4 HAL module configuration for this firmware.
+* @author codex
+* @date 2026-05-14
+* @version 1.0
+*/
+
 #ifndef STM32F4XX_HAL_CONF_H
 #define STM32F4XX_HAL_CONF_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define HAL_MODULE_ENABLED

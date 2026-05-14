@@ -25,7 +25,7 @@
 接收数据 -> 校验协议帧 -> 分发指令 -> 执行动作 -> 非阻塞等待完成标志 -> ACK
 ```
 
-其中 `moveStep()` 指令示例展示了：
+其中 `MoveStep()` 指令示例展示了：
 
 ```text
 解析 payload
@@ -66,4 +66,3 @@ co_await 等待电机完成
 ```text
 docs/vscode_build_debug_zh.md
 ```
-

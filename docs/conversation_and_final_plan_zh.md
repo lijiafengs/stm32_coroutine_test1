@@ -18,10 +18,10 @@
   ```
 - `do something` 之后不能阻塞主循环。
 - 系统还有电机执行类。
-- 示例指令 `moveStep()` 的逻辑为：
+- 示例指令 `MoveStep()` 的逻辑为：
   ```text
   parse data();
-  GetMotor(1).move(100);
+  GetMotor(1).Move(100);
   wait motor complete flag;
   ack;
   ```
@@ -121,8 +121,8 @@ STM32F407xx
 - 不启用异常。
 - 不启用 RTTI。
 - 使用固定任务槽池管理运行中的协程任务。
-- `Scheduler::poll()` 在主循环中被反复调用。
-- `Scheduler::poll()` 只恢复已经 ready 的协程，不阻塞主循环。
+- `Scheduler::Poll()` 在主循环中被反复调用。
+- `Scheduler::Poll()` 只恢复已经 ready 的协程，不阻塞主循环。
 - 通过 awaiter 实现非阻塞等待。
 
 典型 awaiter：
@@ -149,14 +149,14 @@ co_await MotorDone(...)
 示例指令：
 
 ```text
-Commands::moveStep()
+Commands::MoveStep()
 ```
 
 示例逻辑：
 
 ```text
 解析 payload
-GetMotor(1).move(100)
+GetMotor(1).Move(100)
 co_await 等待电机完成
 ACK
 ```
@@ -177,7 +177,7 @@ while (true) {
     协议帧校验和解析
     分发指令
     更新电机状态
-    Scheduler::poll()
+    Scheduler::Poll()
 }
 ```
 
@@ -277,6 +277,5 @@ C:\Users\...\Desktop\stm32_coroutine_test1\docs\vscode_build_debug_zh.md
 - 工程源码自包含，HAL/CMSIS 不依赖外部目录。
 - 迁移到另一台电脑后，只需调整 GCC 和 J-Link 路径。
 - 协程指令框架展示了非阻塞 `do something -> wait flag -> ack` 流程。
-- `moveStep()` 示例展示了电机动作、等待完成和 ACK 的完整链路。
+- `MoveStep()` 示例展示了电机动作、等待完成和 ACK 的完整链路。
 - 中文说明文档可指导用户手动编译和调试。
-

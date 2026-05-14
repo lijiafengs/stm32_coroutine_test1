@@ -6,6 +6,8 @@ This project is a bare-metal STM32F407ZE VS Code/GCC firmware skeleton.
 
 工程简要说明见：[docs/project_brief_zh.md](docs/project_brief_zh.md)
 
+代码风格说明见：[docs/coding_style_zh.md](docs/coding_style_zh.md)
+
 项目对话记录与最终计划见：[docs/conversation_and_final_plan_zh.md](docs/conversation_and_final_plan_zh.md)
 
 ## Build
@@ -55,11 +57,11 @@ For another computer, configure only these paths in `.vscode/settings.json`:
 
 Useful watch expressions:
 
-- `app::g_diag`
-- `app::g_diag.loop_count`
-- `app::g_diag.command_started`
-- `app::g_diag.motor_started`
-- `app::g_diag.motor_completed`
-- `app::g_diag.ack_ok`
+- `app::g_diagnostics`
+- `app::g_diagnostics.m_loopCount`
+- `app::g_diagnostics.m_commandStarted`
+- `app::g_diagnostics.m_motorStarted`
+- `app::g_diagnostics.m_motorCompleted`
+- `app::g_diagnostics.m_ackOk`
 
 The current demo injects one in-memory `MoveStep` frame at boot, simulates motor completion, then writes an ACK.

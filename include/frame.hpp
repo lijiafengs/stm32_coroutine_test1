@@ -1,3 +1,10 @@
+/**
+* @brief Declares protocol frames, ACK queue, CRC helper, and byte stream parser.
+* @author codex
+* @date 2026-05-14
+* @version 1.0
+*/
+
 #pragma once
 
 #include "app_config.hpp"
@@ -6,66 +13,123 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace app {
+namespace app
+{
 
-enum class Command : std::uint8_t {
-  MoveStep = 0x01,
-};
+    enum class Command : std::uint8_t
+    {
+        eMoveStep = 0x01,
+    };
 
-enum class Status : std::uint8_t {
-  Ok = 0x00,
-  BadCrc = 0x01,
-  Unsupported = 0x02,
-  Busy = 0x03,
-  Timeout = 0x04,
-  InvalidPayload = 0x05,
-  QueueFull = 0x06,
-};
+    enum class Status : std::uint8_t
+    {
+        eOk = 0x00,
+        eBadCrc = 0x01,
+        eUnsupported = 0x02,
+        eBusy = 0x03,
+        eTimeout = 0x04,
+        eInvalidPayload = 0x05,
+        eQueueFull = 0x06,
+    };
 
-struct Frame {
-  std::uint8_t seq = 0;
-  std::uint8_t cmd = 0;
-  std::uint8_t payload_len = 0;
-  std::array<std::uint8_t, kMaxPayloadBytes> payload{};
-};
+    struct Frame
+    {
+        std::uint8_t m_seq = 0;
+        std::uint8_t m_cmd = 0;
+        std::uint8_t m_payloadLen = 0;
+        std::array<std::uint8_t, kMaxPayloadBytes> m_payload{};
+    };
 
-struct Ack {
-  std::uint8_t seq = 0;
-  std::uint8_t cmd = 0;
-  Status status = Status::Ok;
-};
+    struct Ack
+    {
+        std::uint8_t m_seq = 0;
+        std::uint8_t m_cmd = 0;
+        Status m_status = Status::eOk;
+    };
 
-std::uint8_t crc8_xor(const std::uint8_t* data, std::size_t size);
-std::size_t encode_frame(const Frame& frame, std::uint8_t* out, std::size_t out_size);
+    /**
+    * @brief Calculates the protocol XOR CRC over a byte range.
+    * @param[in] data Pointer to the first byte in the input range.
+    * @param[in] size Number of bytes to include in the CRC.
+    * @return Calculated CRC byte.
+    */
+    std::uint8_t Crc8Xor(const std::uint8_t* data, std::size_t size);
 
-class FrameParser {
- public:
-  bool push(std::uint8_t byte);
-  bool pop(Frame& frame);
+    /**
+    * @brief Encodes a frame into the wire-format byte buffer.
+    * @param[in] frame Frame fields to encode.
+    * @param[out] out Destination byte buffer.
+    * @param[in] outSize Size of the destination byte buffer.
+    * @return Number of bytes written, or zero when the destination is invalid.
+    */
+    std::size_t EncodeFrame(const Frame& frame, std::uint8_t* out, std::size_t outSize);
 
- private:
-  enum class State : std::uint8_t { Start, Length, Seq, Cmd, Payload, Crc };
+    class FrameParser
+    {
+    public:
+        /**
+        * @brief Pushes one received byte into the parser state machine.
+        * @param[in] byte Received byte to process.
+        * @return True when the byte was accepted, otherwise false on parse error.
+        */
+        bool Push(std::uint8_t byte);
 
-  void reset();
+        /**
+        * @brief Pops one complete decoded frame if available.
+        * @param[out] frame Destination frame populated when a complete frame exists.
+        * @return True when a frame was popped, otherwise false.
+        */
+        bool Pop(Frame& frame);
 
-  State state_ = State::Start;
-  Frame pending_{};
-  Frame ready_{};
-  bool has_ready_ = false;
-  std::uint8_t crc_acc_ = 0;
-  std::uint8_t payload_index_ = 0;
-};
+    private:
+        enum class State : std::uint8_t
+        {
+            eStart,
+            eLength,
+            eSeq,
+            eCmd,
+            ePayload,
+            eCrc
+        };
 
-class AckWriter {
- public:
-  bool push(std::uint8_t seq, std::uint8_t cmd, Status status);
-  bool pop(Ack& ack);
+        /**
+        * @brief Resets the parser state machine to the start state.
+        * @param[in] None No input parameters.
+        * @return None.
+        */
+        void Reset();
 
- private:
-  std::array<Ack, kAckQueueDepth> queue_{};
-  std::size_t head_ = 0;
-  std::size_t tail_ = 0;
-  std::size_t count_ = 0;
-};
+        State m_state = State::eStart;
+        Frame m_pending{};
+        Frame m_ready{};
+        bool m_hasReady = false;
+        std::uint8_t m_crcAcc = 0;
+        std::uint8_t m_payloadIndex = 0;
+    };
 
-}  // namespace app
+    class AckWriter
+    {
+    public:
+        /**
+        * @brief Pushes one ACK record into the fixed-size ACK queue.
+        * @param[in] seq Sequence value copied from the received frame.
+        * @param[in] cmd Command value copied from the received frame.
+        * @param[in] status Result status to report.
+        * @return True when the ACK was queued, otherwise false when the queue is full.
+        */
+        bool Push(std::uint8_t seq, std::uint8_t cmd, Status status);
+
+        /**
+        * @brief Pops one ACK record from the fixed-size ACK queue.
+        * @param[out] ack Destination ACK record populated when one is available.
+        * @return True when an ACK was popped, otherwise false.
+        */
+        bool Pop(Ack& ack);
+
+    private:
+        std::array<Ack, kAckQueueDepth> m_queue{};
+        std::size_t m_head = 0;
+        std::size_t m_tail = 0;
+        std::size_t m_count = 0;
+    };
+}

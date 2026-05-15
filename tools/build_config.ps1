@@ -7,11 +7,6 @@
 $BuildConfig = @{
     FirmwareName = "firmware"
 
-    JLinkDevice = "STM32F407ZE"
-    JLinkInterface = "SWD"
-    JLinkSpeed = "2000"
-    JLinkPort = 2331
-
     Defines = @(
         "STM32F407xx",
         "USE_HAL_DRIVER",

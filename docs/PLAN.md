@@ -1,8 +1,8 @@
-﻿# STM32F407ZET6 C++20 协程指令框架计划
+# STM32F407ZET6 C++20 协程指令框架计划
 
 ## Summary
 - 在 `C:\Users\...\Desktop\stm32_test3` 新建 VS Code 裸机工程，目标 `STM32F407ZET6 / STM32F407ZE`。
-- 编译和 GDB 使用 `<GNU Arm GCC 安装路径>\bin`。
+- 编译和 GDB 使用 `C:\SysGCC\arm-eabi\bin`。
 - HAL/CMSIS 主库使用 `C:\Users\...\Desktop\...\Drivers\STM32F4xx`，因为这里已确认有完整 `HAL`、`CMSIS`、`stm32f407xx.h`、GCC startup。
 - VisualGDB BSP 作为辅助来源：`C:\Users\...\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F4xxxx`，优先参考其中 `STM32F407ZE_flash.lds` 和 `startup_stm32f407xx.c`；如果主库编译不顺，再切换或补齐。
 - 调试使用 `JLinkGDBServerCL.exe` + `arm-none-eabi-gdb.exe`，VS Code 一键下载和断点调试。

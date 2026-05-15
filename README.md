@@ -25,12 +25,11 @@ From a terminal:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1
 ```
 
-If the GNU Arm toolchain is installed in another location, edit
-`.vscode/settings.json`. The build script reads `stm32.gccPath` from that file
-when `-Toolchain` is not provided:
+If the GNU Arm toolchain is installed in another location, either edit
+`.vscode/settings.json` or run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1 -Toolchain C:\SysGCC\arm-eabi\bin
 ```
 
 Outputs are generated in `build/`:

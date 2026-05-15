@@ -56,8 +56,8 @@ co_await 等待电机完成
 
 ```json
 {
-  "stm32.gccPath": "<GNU Arm GCC 的 bin 目录>",
-  "stm32.jlinkGdbServer": "<JLinkGDBServerCL.exe 的完整路径>"
+  "stm32.gccPath": "C:\\SysGCC\\arm-eabi\\bin",
+  "stm32.jlinkGdbServer": "C:\\Program Files (x86)\\SEGGER\\JLink_V490e\\JLinkGDBServerCL.exe"
 }
 ```
 

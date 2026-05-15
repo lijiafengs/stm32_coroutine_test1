@@ -1,4 +1,4 @@
-﻿# VS Code 编译调试说明
+# VS Code 编译调试说明
 
 本文档说明如何在 VS Code 中编译和调试本工程。工程已经包含 STM32 HAL、CMSIS、启动文件和链接脚本；迁移到另一台电脑时，只需要配置 GNU Arm GCC 和 J-Link GDB Server 的路径。
 
@@ -56,8 +56,8 @@ C:\Users\...\Desktop\stm32_coroutine_test1
 
 ```json
 {
-  "stm32.gccPath": "<GNU Arm GCC 的 bin 目录>",
-  "stm32.jlinkGdbServer": "<JLinkGDBServerCL.exe 的完整路径>"
+  "stm32.gccPath": "C:\\SysGCC\\arm-eabi\\bin",
+  "stm32.jlinkGdbServer": "C:\\Program Files (x86)\\SEGGER\\JLink_V490e\\JLinkGDBServerCL.exe"
 }
 ```
 
@@ -86,10 +86,10 @@ C:\Users\...\Desktop\stm32_coroutine_test1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1
 ```
 
-脚本默认会读取 `.vscode/settings.json` 中的 `stm32.gccPath`。如确实需要临时覆盖，也可以使用 `-Toolchain` 参数：
+如果想临时指定 GCC 路径：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1 -Toolchain <GNU Arm GCC 的 bin 目录>
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1 -Toolchain C:\SysGCC\arm-eabi\bin
 ```
 
 编译成功后会生成：
@@ -116,51 +116,7 @@ build\firmware.map
 
 这个任务会删除 `build/` 目录。
 
-## 6. 只下载固件，不进入调试
-
-如果只想把固件下载到 STM32，不想进入断点调试，可以使用 VS Code 任务：
-
-```text
-Download Firmware (J-Link)
-```
-
-操作步骤：
-
-1. 按 `F1`。
-2. 输入并选择 `Tasks: Run Task`。
-3. 选择 `Download Firmware (J-Link)`。
-
-这个任务会按顺序执行：
-
-1. `Build Firmware (GCC)`：先编译生成 `build/firmware.elf`。
-2. `J-Link Download Firmware`：启动 J-Link GDB Server，通过 `arm-none-eabi-gdb` 执行 `load` 下载 ELF。
-3. 下载完成后复位目标板、断开 GDB，并退出任务。
-
-J-Link 的目标芯片、接口、速度和端口默认从以下文件读取：
-
-```text
-tools/build_config.ps1
-```
-
-也可以在 VS Code 终端中手动执行：
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1
-```
-
-脚本默认会读取 `.vscode/settings.json` 中的 `stm32.gccPath` 和 `stm32.jlinkGdbServer`。如确实需要临时覆盖，可以显式指定：
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1 -Toolchain <GNU Arm GCC 的 bin 目录> -JLinkGdbServer "<JLinkGDBServerCL.exe 的完整路径>"
-```
-
-注意：
-
-- 只下载任务不会停在 `main`。
-- 只下载任务不会打开调试界面。
-- 下载使用的默认目标文件是 `build/firmware.elf`。
-
-## 7. 调试前检查
+## 6. 调试前检查
 
 调试前确认：
 
@@ -170,7 +126,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1 -Toolch
 - `.vscode/settings.json` 中的两个路径正确。
 - VS Code 调试配置选择的是 `J-Link Debug STM32F407ZE (CDT GDB)`。
 
-## 8. 一键调试
+## 7. 一键调试
 
 1. 打开 VS Code 左侧 `Run and Debug`。
 2. 选择调试配置：
@@ -197,7 +153,7 @@ J-Link Debug STM32F407ZE (CDT GDB)
    - `monitor halt`
 7. 进入正常断点调试。
 
-## 9. 调试时建议观察的变量
+## 8. 调试时建议观察的变量
 
 可以在 Watch 窗口添加：
 
@@ -222,7 +178,7 @@ app::g_diagnostics.m_schedulerTimeouts
 - `ack_ok` 变为 `1`。
 - `scheduler_timeouts` 保持 `0`。
 
-## 10. 停止残留的 J-Link GDB Server
+## 9. 停止残留的 J-Link GDB Server
 
 如果调试异常退出，可能残留 `JLinkGDBServerCL.exe` 进程。可以手动停止：
 
@@ -236,7 +192,7 @@ app::g_diagnostics.m_schedulerTimeouts
 Get-Process JLinkGDBServerCL -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
-## 11. 常见问题
+## 10. 常见问题
 
 ### 10.1 F1 中找不到编译任务
 
@@ -258,7 +214,7 @@ README.md
 检查 `.vscode/settings.json`：
 
 ```json
-"stm32.gccPath": "<GNU Arm GCC 的 bin 目录>"
+"stm32.gccPath": "C:\\SysGCC\\arm-eabi\\bin"
 ```
 
 该目录下必须有：
@@ -274,7 +230,7 @@ arm-none-eabi-gdb.exe
 检查 `.vscode/settings.json`：
 
 ```json
-"stm32.jlinkGdbServer": "<JLinkGDBServerCL.exe 的完整路径>"
+"stm32.jlinkGdbServer": "C:\\Program Files (x86)\\SEGGER\\JLink_V490e\\JLinkGDBServerCL.exe"
 ```
 
 该路径必须指向实际存在的 `JLinkGDBServerCL.exe`。
@@ -319,7 +275,7 @@ F1 -> Tasks: Run Task -> Stop J-Link GDB Server
 
 如果仍然不行，可以在任务管理器中结束 `JLinkGDBServerCL.exe`。
 
-## 12. 迁移到另一台电脑的步骤
+## 11. 迁移到另一台电脑的步骤
 
 1. 拷贝整个工程目录。
 2. 在新电脑安装 GNU Arm Embedded Toolchain。

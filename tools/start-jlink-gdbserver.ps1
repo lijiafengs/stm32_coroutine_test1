@@ -1,9 +1,9 @@
 param(
-    [string]$JLinkGdbServer = "",
-    [string]$Device = "",
-    [string]$Interface = "",
-    [string]$Speed = "",
-    [int]$Port = 0,
+    [string]$JLinkGdbServer = "C:\Program Files (x86)\SEGGER\JLink_V490e\JLinkGDBServerCL.exe",
+    [string]$Device = "STM32F407ZE",
+    [string]$Interface = "SWD",
+    [string]$Speed = "2000",
+    [int]$Port = 2331,
     [int]$TimeoutSeconds = 10
 )
 
@@ -12,49 +12,6 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $BuildDir = Join-Path $Root "build"
 New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
-
-$Config = Join-Path $PSScriptRoot "build_config.ps1"
-if (Test-Path $Config) {
-    . $Config
-}
-
-function Get-VSCodeSetting($Name) {
-    $settingsPath = Join-Path $Root ".vscode\settings.json"
-    if (!(Test-Path $settingsPath)) {
-        return ""
-    }
-
-    $settings = Get-Content -Raw -Path $settingsPath | ConvertFrom-Json
-    $property = $settings.PSObject.Properties[$Name]
-    if ($null -eq $property) {
-        return ""
-    }
-    return [string]$property.Value
-}
-
-if ([string]::IsNullOrWhiteSpace($JLinkGdbServer)) {
-    $JLinkGdbServer = Get-VSCodeSetting "stm32.jlinkGdbServer"
-}
-
-if ([string]::IsNullOrWhiteSpace($JLinkGdbServer)) {
-    throw "Missing J-Link GDB Server path. Set stm32.jlinkGdbServer in .vscode/settings.json or pass -JLinkGdbServer."
-}
-
-if ([string]::IsNullOrWhiteSpace($Device)) {
-    $Device = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("JLinkDevice")) { $BuildConfig["JLinkDevice"] } else { "STM32F407ZE" }
-}
-
-if ([string]::IsNullOrWhiteSpace($Interface)) {
-    $Interface = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("JLinkInterface")) { $BuildConfig["JLinkInterface"] } else { "SWD" }
-}
-
-if ([string]::IsNullOrWhiteSpace($Speed)) {
-    $Speed = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("JLinkSpeed")) { $BuildConfig["JLinkSpeed"] } else { "2000" }
-}
-
-if ($Port -eq 0) {
-    $Port = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("JLinkPort")) { [int]$BuildConfig["JLinkPort"] } else { 2331 }
-}
 
 if (!(Test-Path $JLinkGdbServer)) {
     throw "J-Link GDB Server not found: $JLinkGdbServer"

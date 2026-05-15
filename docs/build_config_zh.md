@@ -40,6 +40,7 @@ tools/build.ps1
 - 应用源文件。
 - startup 文件。
 - linker script。
+- J-Link 下载/调试目标参数。
 
 ## 2. 工程配置文件
 
@@ -62,7 +63,26 @@ build/firmware.bin
 build/firmware.map
 ```
 
-### 2.2 Defines
+### 2.2 J-Link 参数
+
+J-Link 下载和调试目标参数：
+
+```powershell
+JLinkDevice = "STM32F407ZE"
+JLinkInterface = "SWD"
+JLinkSpeed = "2000"
+JLinkPort = 2331
+```
+
+换芯片时通常需要修改：
+
+```powershell
+JLinkDevice = "STM32F407ZE"
+```
+
+VS Code 调试任务和只下载任务都会读取这里的默认值。
+
+### 2.3 Defines
 
 预处理宏：
 
@@ -80,7 +100,7 @@ Defines = @(
 "STM32F407xx"
 ```
 
-### 2.3 Includes
+### 2.4 Includes
 
 头文件搜索路径：
 
@@ -95,7 +115,7 @@ Includes = @(
 
 新增模块或换 HAL/CMSIS 目录时，在这里增删路径。
 
-### 2.4 CpuFlags
+### 2.5 CpuFlags
 
 CPU、FPU 和 ABI 参数：
 
@@ -110,7 +130,7 @@ CpuFlags = @(
 
 换成其他 Cortex-M 芯片时，优先修改这里。
 
-### 2.5 SourcesC
+### 2.6 SourcesC
 
 C 源文件列表：
 
@@ -123,7 +143,7 @@ SourcesC = @(
 
 新增 HAL 外设源码时，在这里加入对应 `.c` 文件。
 
-### 2.6 SourcesCpp
+### 2.7 SourcesCpp
 
 C++ 源文件列表：
 
@@ -137,7 +157,7 @@ SourcesCpp = @(
 
 新增业务模块 `.cpp` 时，在这里加入文件路径。
 
-### 2.7 SourcesAsm
+### 2.8 SourcesAsm
 
 汇编启动文件列表：
 
@@ -149,7 +169,7 @@ SourcesAsm = @(
 
 换芯片时通常需要换 startup 文件。
 
-### 2.8 LinkerScript
+### 2.9 LinkerScript
 
 链接脚本：
 
@@ -159,7 +179,7 @@ LinkerScript = "linker/STM32F407ZE_FLASH.ld"
 
 换芯片、换 Flash/RAM 大小或换内存布局时，修改这里并提供新的 `.ld` 文件。
 
-### 2.9 Extra Flags
+### 2.10 Extra Flags
 
 额外编译或链接参数：
 
@@ -210,4 +230,3 @@ tools/build_config.ps1
 ```
 
 如果要让 VS Code 使用其他配置文件，可以在 `.vscode/tasks.json` 中给 `build.ps1` 增加 `-Config` 参数。
-

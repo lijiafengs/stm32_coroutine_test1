@@ -11,9 +11,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}\\tools\\build.ps1",
-        "-Toolchain",
-        "${config:stm32.gccPath}"
+        "${workspaceFolder}\\tools\\build.ps1"
       ],
       "group": {
         "kind": "build",
@@ -36,17 +34,7 @@
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        "${workspaceFolder}\\tools\\start-jlink-gdbserver.ps1",
-        "-JLinkGdbServer",
-        "${config:stm32.jlinkGdbServer}",
-        "-Device",
-        "STM32F407ZE",
-        "-Interface",
-        "SWD",
-        "-Speed",
-        "2000",
-        "-Port",
-        "2331"
+        "${workspaceFolder}\\tools\\start-jlink-gdbserver.ps1"
       ],
       "presentation": {
         "reveal": "always",
@@ -62,6 +50,35 @@
       "dependsOn": [
         "Build Firmware (GCC)",
         "Start J-Link GDB Server"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "J-Link Download Firmware",
+      "detail": "Download build/firmware.elf through J-Link GDB Server without starting a debug session.",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}\\tools\\download.ps1"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Download Firmware (J-Link)",
+      "detail": "Build firmware, download it through J-Link, then exit without debugging.",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build Firmware (GCC)",
+        "J-Link Download Firmware"
       ],
       "problemMatcher": []
     },

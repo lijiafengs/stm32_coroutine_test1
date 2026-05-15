@@ -1,17 +1,16 @@
 param(
+    [string]$Toolchain = "",
     [string]$JLinkGdbServer = "",
+    [string]$Firmware = "",
     [string]$Device = "",
     [string]$Interface = "",
     [string]$Speed = "",
-    [int]$Port = 0,
-    [int]$TimeoutSeconds = 10
+    [int]$Port = 0
 )
 
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
-$BuildDir = Join-Path $Root "build"
-New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
 
 $Config = Join-Path $PSScriptRoot "build_config.ps1"
 if (Test-Path $Config) {
@@ -32,12 +31,29 @@ function Get-VSCodeSetting($Name) {
     return [string]$property.Value
 }
 
+if ([string]::IsNullOrWhiteSpace($Toolchain)) {
+    if (![string]::IsNullOrWhiteSpace($env:ARM_GCC_PATH)) {
+        $Toolchain = $env:ARM_GCC_PATH
+    } else {
+        $Toolchain = Get-VSCodeSetting "stm32.gccPath"
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($JLinkGdbServer)) {
     $JLinkGdbServer = Get-VSCodeSetting "stm32.jlinkGdbServer"
 }
 
+if ([string]::IsNullOrWhiteSpace($Toolchain)) {
+    throw "Missing GCC toolchain path. Set stm32.gccPath in .vscode/settings.json or pass -Toolchain."
+}
+
 if ([string]::IsNullOrWhiteSpace($JLinkGdbServer)) {
     throw "Missing J-Link GDB Server path. Set stm32.jlinkGdbServer in .vscode/settings.json or pass -JLinkGdbServer."
+}
+
+if ([string]::IsNullOrWhiteSpace($Firmware)) {
+    $FirmwareName = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("FirmwareName")) { $BuildConfig["FirmwareName"] } else { "firmware" }
+    $Firmware = Join-Path $Root "build\$FirmwareName.elf"
 }
 
 if ([string]::IsNullOrWhiteSpace($Device)) {
@@ -56,50 +72,48 @@ if ($Port -eq 0) {
     $Port = if ($null -ne $BuildConfig -and $BuildConfig.ContainsKey("JLinkPort")) { [int]$BuildConfig["JLinkPort"] } else { 2331 }
 }
 
-if (!(Test-Path $JLinkGdbServer)) {
-    throw "J-Link GDB Server not found: $JLinkGdbServer"
+$Gdb = Join-Path $Toolchain "arm-none-eabi-gdb.exe"
+
+if (!(Test-Path $Gdb)) {
+    throw "Missing GDB: $Gdb"
 }
 
-Get-Process JLinkGDBServerCL -ErrorAction SilentlyContinue | Stop-Process -Force
-Start-Sleep -Milliseconds 300
+if (!(Test-Path $Firmware)) {
+    throw "Missing firmware ELF: $Firmware"
+}
 
-$OutLog = Join-Path $BuildDir "jlink-vscode.out.log"
-$ErrLog = Join-Path $BuildDir "jlink-vscode.err.log"
-Remove-Item $OutLog, $ErrLog -Force -ErrorAction SilentlyContinue
+& (Join-Path $PSScriptRoot "start-jlink-gdbserver.ps1") `
+    -JLinkGdbServer $JLinkGdbServer `
+    -Device $Device `
+    -Interface $Interface `
+    -Speed $Speed `
+    -Port $Port
 
-$Args = @(
-    "-device", $Device,
-    "-if", $Interface,
-    "-speed", $Speed,
-    "-port", "$Port",
-    "-singlerun"
+$GdbCommands = @(
+    "set confirm off",
+    "set pagination off",
+    "target remote localhost:$Port",
+    "monitor reset",
+    "monitor halt",
+    "load",
+    "monitor reset",
+    "detach",
+    "quit"
 )
 
-$Process = Start-Process `
-    -FilePath $JLinkGdbServer `
-    -ArgumentList $Args `
-    -RedirectStandardOutput $OutLog `
-    -RedirectStandardError $ErrLog `
-    -WindowStyle Hidden `
-    -PassThru
+$GdbArgs = @(
+    "--batch",
+    "--quiet",
+    $Firmware
+)
 
-$Deadline = (Get-Date).AddSeconds($TimeoutSeconds)
-while ((Get-Date) -lt $Deadline) {
-    if ($Process.HasExited) {
-        $stdout = if (Test-Path $OutLog) { Get-Content -Raw $OutLog } else { "" }
-        $stderr = if (Test-Path $ErrLog) { Get-Content -Raw $ErrLog } else { "" }
-        throw "J-Link GDB Server exited early with code $($Process.ExitCode).`nSTDOUT:`n$stdout`nSTDERR:`n$stderr"
-    }
-
-    $log = if (Test-Path $OutLog) { Get-Content -Raw $OutLog } else { "" }
-    if ($log -match "Waiting for GDB connection") {
-        Write-Host "J-Link GDB Server is ready on localhost:$Port"
-        Write-Host "Log: $OutLog"
-        exit 0
-    }
-
-    Start-Sleep -Milliseconds 200
+foreach ($command in $GdbCommands) {
+    $GdbArgs += @("-ex", $command)
 }
 
-$tail = if (Test-Path $OutLog) { Get-Content -Raw $OutLog } else { "" }
-throw "Timed out waiting for J-Link GDB Server. Log:`n$tail"
+& $Gdb @GdbArgs
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}
+
+Write-Host "Downloaded: $Firmware"

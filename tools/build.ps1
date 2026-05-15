@@ -23,12 +23,30 @@ if ($null -eq $BuildConfig) {
     throw "Build config did not define `$BuildConfig: $Config"
 }
 
+function Get-VSCodeSetting($Name) {
+    $settingsPath = Join-Path $Root ".vscode\settings.json"
+    if (!(Test-Path $settingsPath)) {
+        return ""
+    }
+
+    $settings = Get-Content -Raw -Path $settingsPath | ConvertFrom-Json
+    $property = $settings.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return ""
+    }
+    return [string]$property.Value
+}
+
 if ([string]::IsNullOrWhiteSpace($Toolchain)) {
     if (![string]::IsNullOrWhiteSpace($env:ARM_GCC_PATH)) {
         $Toolchain = $env:ARM_GCC_PATH
     } else {
-        $Toolchain = "C:\SysGCC\arm-eabi\bin"
+        $Toolchain = Get-VSCodeSetting "stm32.gccPath"
     }
+}
+
+if ([string]::IsNullOrWhiteSpace($Toolchain)) {
+    throw "Missing GCC toolchain path. Set stm32.gccPath in .vscode/settings.json or pass -Toolchain."
 }
 
 $CC = Join-Path $Toolchain "arm-none-eabi-gcc.exe"

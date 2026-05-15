@@ -1,4 +1,4 @@
-# STM32F407 协程指令框架对话记录与最终计划
+﻿# STM32F407 协程指令框架对话记录与最终计划
 
 本文档整理本工程从需求提出、方案确认、实现、调试到 GitHub 上传准备阶段的主要沟通记录和最终方案。记录时间为 2026-05-14，工程目录已由 `stm32_test3` 重命名为 `stm32_coroutine_test1`。
 
@@ -32,7 +32,7 @@
 用户提供的编译调试工具链路径：
 
 ```text
-C:\SysGCC\arm-eabi
+<GNU Arm GCC 安装路径>
 ```
 
 用户提供和确认可用的 STM32 HAL/CMSIS 来源：
@@ -203,7 +203,7 @@ while (true) {
 调试过程中出现过以下问题：
 
 1. `unable to start debugging. Debug server process failed to initialize`
-2. `unknown command line parameter C:\Program files\..\JLinkGDBServerCL.exe found`
+2. `unknown command line parameter <错误的 JLinkGDBServerCL.exe 参数> found`
 3. J-Link GDB Server 一直停在：
    ```text
    Waiting for GDB connection...
@@ -242,8 +242,8 @@ while (true) {
 - 修改 `.vscode/settings.json` 中的两个路径：
   ```json
   {
-    "stm32.gccPath": "C:\\SysGCC\\arm-eabi\\bin",
-    "stm32.jlinkGdbServer": "C:\\Program Files (x86)\\SEGGER\\JLink_V490e\\JLinkGDBServerCL.exe"
+    "stm32.gccPath": "<GNU Arm GCC 的 bin 目录>",
+    "stm32.jlinkGdbServer": "<JLinkGDBServerCL.exe 的完整路径>"
   }
   ```
 

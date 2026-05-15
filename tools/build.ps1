@@ -1,5 +1,6 @@
 param(
-    [string]$Toolchain = ""
+    [string]$Toolchain = "",
+    [string]$Config = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -7,6 +8,20 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $BuildDir = Join-Path $Root "build"
 $ObjDir = Join-Path $BuildDir "obj"
+
+if ([string]::IsNullOrWhiteSpace($Config)) {
+    $Config = Join-Path $PSScriptRoot "build_config.ps1"
+}
+
+if (!(Test-Path $Config)) {
+    throw "Missing build config: $Config"
+}
+
+. $Config
+
+if ($null -eq $BuildConfig) {
+    throw "Build config did not define `$BuildConfig: $Config"
+}
 
 if ([string]::IsNullOrWhiteSpace($Toolchain)) {
     if (![string]::IsNullOrWhiteSpace($env:ARM_GCC_PATH)) {
@@ -29,26 +44,23 @@ foreach ($tool in @($CC, $CXX, $Objcopy, $Size)) {
 
 New-Item -ItemType Directory -Force -Path $BuildDir, $ObjDir | Out-Null
 
-$Defines = @(
-    "-DSTM32F407xx",
-    "-DUSE_HAL_DRIVER",
-    "-DHSE_VALUE=8000000"
-)
+function ConvertTo-RootPath($Path) {
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return $Path
+    }
+    return Join-Path $Root $Path
+}
 
-$Includes = @(
-    "include",
-    "Drivers/STM32F4xx/CMSIS/Core/Include",
-    "Drivers/STM32F4xx/CMSIS/Include",
-    "Drivers/STM32F4xx/CMSIS/Device/ST/STM32F4xx/Include",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Inc"
-) | ForEach-Object { "-I$(Join-Path $Root $_)" }
+function Get-ConfigArray($Name) {
+    if ($BuildConfig.ContainsKey($Name) -and ($null -ne $BuildConfig[$Name])) {
+        return @($BuildConfig[$Name])
+    }
+    return @()
+}
 
-$CpuFlags = @(
-    "-mcpu=cortex-m4",
-    "-mthumb",
-    "-mfpu=fpv4-sp-d16",
-    "-mfloat-abi=softfp"
-)
+$Defines = Get-ConfigArray "Defines" | ForEach-Object { "-D$_" }
+$Includes = Get-ConfigArray "Includes" | ForEach-Object { "-I$(ConvertTo-RootPath $_)" }
+$CpuFlags = Get-ConfigArray "CpuFlags"
 
 $CommonFlags = @(
     "-g3",
@@ -58,44 +70,23 @@ $CommonFlags = @(
     "-Wall",
     "-Wextra",
     "-Wno-unused-parameter"
-) + $CpuFlags + $Defines + $Includes
+) + $CpuFlags + $Defines + $Includes + (Get-ConfigArray "ExtraCommonFlags")
 
-$CFlags = @("-std=gnu11") + $CommonFlags
+$CFlags = @("-std=gnu11") + $CommonFlags + (Get-ConfigArray "ExtraCFlags")
 $CxxFlags = @(
     "-std=gnu++20",
     "-fno-exceptions",
     "-fno-rtti",
     "-fno-use-cxa-atexit"
-) + $CommonFlags
+) + $CommonFlags + (Get-ConfigArray "ExtraCxxFlags")
 
 $AsmFlags = @(
     "-x", "assembler-with-cpp"
-) + $CommonFlags
+) + $CommonFlags + (Get-ConfigArray "ExtraAsmFlags")
 
-$SourcesC = @(
-    "Drivers/STM32F4xx/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c",
-    "Drivers/STM32F4xx/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c"
-)
-
-$SourcesCpp = @(
-    "src/diagnostics.cpp",
-    "src/frame.cpp",
-    "src/scheduler.cpp",
-    "src/task.cpp",
-    "src/motor.cpp",
-    "src/commands.cpp",
-    "src/hal_hooks.cpp",
-    "src/main.cpp"
-)
-
-$SourcesAsm = @(
-    "Drivers/STM32F4xx/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s"
-)
+$SourcesC = Get-ConfigArray "SourcesC"
+$SourcesCpp = Get-ConfigArray "SourcesCpp"
+$SourcesAsm = Get-ConfigArray "SourcesAsm"
 
 function Get-ObjectPath($RelativePath) {
     $safe = $RelativePath -replace '[:\\/\.]', '_'
@@ -107,29 +98,38 @@ $Objects = @()
 foreach ($src in $SourcesC) {
     $obj = Get-ObjectPath $src
     $Objects += $obj
-    & $CC @CFlags -c (Join-Path $Root $src) -o $obj
+    & $CC @CFlags -c (ConvertTo-RootPath $src) -o $obj
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 foreach ($src in $SourcesCpp) {
     $obj = Get-ObjectPath $src
     $Objects += $obj
-    & $CXX @CxxFlags -c (Join-Path $Root $src) -o $obj
+    & $CXX @CxxFlags -c (ConvertTo-RootPath $src) -o $obj
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 foreach ($src in $SourcesAsm) {
     $obj = Get-ObjectPath $src
     $Objects += $obj
-    & $CC @AsmFlags -c (Join-Path $Root $src) -o $obj
+    & $CC @AsmFlags -c (ConvertTo-RootPath $src) -o $obj
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-$Elf = Join-Path $BuildDir "firmware.elf"
-$Hex = Join-Path $BuildDir "firmware.hex"
-$Bin = Join-Path $BuildDir "firmware.bin"
-$Map = Join-Path $BuildDir "firmware.map"
-$LinkerScript = Join-Path $Root "linker/STM32F407ZE_FLASH.ld"
+$FirmwareName = $BuildConfig["FirmwareName"]
+if ([string]::IsNullOrWhiteSpace($FirmwareName)) {
+    $FirmwareName = "firmware"
+}
+
+$Elf = Join-Path $BuildDir "$FirmwareName.elf"
+$Hex = Join-Path $BuildDir "$FirmwareName.hex"
+$Bin = Join-Path $BuildDir "$FirmwareName.bin"
+$Map = Join-Path $BuildDir "$FirmwareName.map"
+$LinkerScript = ConvertTo-RootPath $BuildConfig["LinkerScript"]
+
+if (!(Test-Path $LinkerScript)) {
+    throw "Missing linker script: $LinkerScript"
+}
 
 $LinkFlags = @(
     "-T$LinkerScript",
@@ -138,7 +138,7 @@ $LinkFlags = @(
     "-Wl,--print-memory-usage",
     "--specs=nano.specs",
     "--specs=nosys.specs"
-) + $CpuFlags
+) + $CpuFlags + (Get-ConfigArray "ExtraLinkFlags")
 
 & $CXX @Objects @LinkFlags -o $Elf
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

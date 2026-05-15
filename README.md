@@ -8,6 +8,8 @@ This project is a bare-metal STM32F407ZE VS Code/GCC firmware skeleton.
 
 代码风格说明见：[docs/coding_style_zh.md](docs/coding_style_zh.md)
 
+构建配置拆分说明见：[docs/build_config_zh.md](docs/build_config_zh.md)
+
 项目对话记录与最终计划见：[docs/conversation_and_final_plan_zh.md](docs/conversation_and_final_plan_zh.md)
 
 ## Build

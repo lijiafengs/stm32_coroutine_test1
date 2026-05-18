@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "J-Link Debug STM32F407ZE (CDT GDB)",
+      "name": "J-Link Debug (CDT GDB)",
       "type": "gdbtarget",
       "request": "attach",
       "program": "${workspaceFolder}\\build\\firmware.elf",
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Debug: Build + Start J-Link GDB Server",
+      "preLaunchTask": "Debug Firmware (J-Link)",
       "postDebugTask": "Stop J-Link GDB Server",
       "gdb": "${config:stm32.gccPath}\\arm-none-eabi-gdb.exe",
       "gdbAsync": true,

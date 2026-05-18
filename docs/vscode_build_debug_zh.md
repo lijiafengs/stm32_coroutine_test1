@@ -154,7 +154,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1
 - J-Link 已连接 STM32F407ZET6 板子的 SWD 接口。
 - 目标板已经上电。
 - `.vscode/settings.json` 中的两个路径正确。
-- VS Code 调试配置选择的是 `J-Link Debug STM32F407ZE (CDT GDB)`。
+- VS Code 调试配置选择的是 `J-Link Debug (CDT GDB)`。
 
 ## 8. 一键调试
 
@@ -162,26 +162,27 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1
 2. 选择调试配置：
 
 ```text
-J-Link Debug STM32F407ZE (CDT GDB)
+J-Link Debug (CDT GDB)
 ```
 
 3. 按 `F5`。
 
 执行过程如下：
 
-1. VS Code 执行 `Debug: Build + Start J-Link GDB Server`。
-2. 该任务先执行 `Build Firmware (GCC)` 编译固件。
-3. 然后执行 `Start J-Link GDB Server` 启动 J-Link GDB Server。
-4. 启动脚本等待日志中出现 `Waiting for GDB connection...`。
-5. VS Code 的 CDT GDB 调试器连接 `localhost:2331`。
-6. GDB 执行：
+1. VS Code 执行 `Debug Firmware (J-Link)`。
+2. 该任务执行 `Start J-Link GDB Server` 启动 J-Link GDB Server，不重新编译固件。
+3. 启动脚本等待日志中出现 `Waiting for GDB connection...`。
+4. VS Code 的 CDT GDB 调试器连接 `localhost:2331`。
+5. GDB 执行：
    - `monitor reset`
    - `monitor halt`
    - `load`
    - `break main`
    - `monitor reset`
    - `monitor halt`
-7. 进入正常断点调试。
+6. 进入正常断点调试。
+
+如果源码已经修改，需要先执行 `Build Firmware (GCC)`，再点击 `Run and Debug`。如果想手动使用旧的“编译后调试服务”流程，可以在 `F1 -> Tasks: Run Task` 中选择 `Debug: Build + Start J-Link GDB Server`。
 
 ## 9. 调试时建议观察的变量
 
@@ -286,7 +287,7 @@ Waiting for GDB connection...
 这是 Microsoft `cppdbg` 调试器在本环境中出现过的问题。本工程当前使用 Eclipse CDT GDB 调试器，配置名称是：
 
 ```text
-J-Link Debug STM32F407ZE (CDT GDB)
+J-Link Debug (CDT GDB)
 ```
 
 不要选择旧的 `cppdbg` 配置。如果 VS Code 下拉列表中仍有旧配置，执行：
@@ -316,6 +317,6 @@ F1 -> Tasks: Run Task -> Stop J-Link GDB Server
    - `stm32.jlinkGdbServer`
 6. 打开工程根目录。
 7. 执行 `Build Firmware (GCC)`。
-8. 选择 `J-Link Debug STM32F407ZE (CDT GDB)` 并按 `F5` 调试。
+8. 选择 `J-Link Debug (CDT GDB)` 并按 `F5` 调试。
 
 只要芯片仍是 `STM32F407ZET6`，调试接口仍是 SWD，通常不需要修改其他文件。

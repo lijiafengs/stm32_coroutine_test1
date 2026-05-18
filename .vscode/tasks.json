@@ -66,6 +66,15 @@
       "problemMatcher": []
     },
     {
+      "label": "Debug Firmware (J-Link)",
+      "detail": "Start J-Link GDB Server for Run and Debug without rebuilding firmware.",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Start J-Link GDB Server"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "J-Link Download Firmware",
       "detail": "Download build/firmware.elf through J-Link GDB Server without starting a debug session.",
       "type": "shell",

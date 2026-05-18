@@ -1,5 +1,5 @@
 param(
-    [string]$JLinkGdbServer = "C:\Program Files (x86)\SEGGER\JLink_V490e\JLinkGDBServerCL.exe",
+    [string]$JLinkGdbServer = "",
     [string]$Device = "STM32F407ZE",
     [string]$Interface = "SWD",
     [string]$Speed = "2000",
@@ -12,6 +12,10 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 $BuildDir = Join-Path $Root "build"
 New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
+
+. (Join-Path $PSScriptRoot "vscode-settings.ps1")
+
+$JLinkGdbServer = Resolve-JLinkGdbServerPath $JLinkGdbServer
 
 if (!(Test-Path $JLinkGdbServer)) {
     throw "J-Link GDB Server not found: $JLinkGdbServer"

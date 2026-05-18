@@ -86,7 +86,9 @@ C:\Users\...\Desktop\stm32_coroutine_test1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1
 ```
 
-如果想临时指定 GCC 路径：
+通常不需要在命令行指定 GCC 路径，脚本会读取 `.vscode/settings.json` 中的 `stm32.gccPath`。
+
+如果想临时覆盖 GCC 路径：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build.ps1 -Toolchain C:\SysGCC\arm-eabi\bin
@@ -135,7 +137,7 @@ build\firmware.map
 也可以在 VS Code 终端中手动执行下载脚本：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1 -Toolchain C:\SysGCC\arm-eabi\bin -JLinkGdbServer "C:\Program Files (x86)\SEGGER\JLink_V490e\JLinkGDBServerCL.exe"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1
 ```
 
 注意：

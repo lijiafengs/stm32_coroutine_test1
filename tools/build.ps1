@@ -9,6 +9,8 @@ $Root = Split-Path -Parent $PSScriptRoot
 $BuildDir = Join-Path $Root "build"
 $ObjDir = Join-Path $BuildDir "obj"
 
+. (Join-Path $PSScriptRoot "vscode-settings.ps1")
+
 if ([string]::IsNullOrWhiteSpace($Config)) {
     $Config = Join-Path $PSScriptRoot "build_config.ps1"
 }
@@ -23,13 +25,7 @@ if ($null -eq $BuildConfig) {
     throw "Build config did not define `$BuildConfig: $Config"
 }
 
-if ([string]::IsNullOrWhiteSpace($Toolchain)) {
-    if (![string]::IsNullOrWhiteSpace($env:ARM_GCC_PATH)) {
-        $Toolchain = $env:ARM_GCC_PATH
-    } else {
-        $Toolchain = "C:\SysGCC\arm-eabi\bin"
-    }
-}
+$Toolchain = Resolve-ToolchainPath $Toolchain
 
 $CC = Join-Path $Toolchain "arm-none-eabi-gcc.exe"
 $CXX = Join-Path $Toolchain "arm-none-eabi-g++.exe"

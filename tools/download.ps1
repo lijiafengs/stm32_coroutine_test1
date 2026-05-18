@@ -1,6 +1,6 @@
 param(
     [string]$Toolchain = "",
-    [string]$JLinkGdbServer = "C:\Program Files (x86)\SEGGER\JLink_V490e\JLinkGDBServerCL.exe",
+    [string]$JLinkGdbServer = "",
     [string]$Firmware = "",
     [string]$Device = "STM32F407ZE",
     [string]$Interface = "SWD",
@@ -12,13 +12,10 @@ $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot
 
-if ([string]::IsNullOrWhiteSpace($Toolchain)) {
-    if (![string]::IsNullOrWhiteSpace($env:ARM_GCC_PATH)) {
-        $Toolchain = $env:ARM_GCC_PATH
-    } else {
-        $Toolchain = "C:\SysGCC\arm-eabi\bin"
-    }
-}
+. (Join-Path $PSScriptRoot "vscode-settings.ps1")
+
+$Toolchain = Resolve-ToolchainPath $Toolchain
+$JLinkGdbServer = Resolve-JLinkGdbServerPath $JLinkGdbServer
 
 if ([string]::IsNullOrWhiteSpace($Firmware)) {
     $Firmware = Join-Path $Root "build\firmware.elf"

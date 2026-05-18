@@ -116,7 +116,35 @@ build\firmware.map
 
 这个任务会删除 `build/` 目录。
 
-## 6. 调试前检查
+## 6. 只下载固件
+
+如果只想把固件下载到板子上，不想进入 VS Code 调试界面，可以使用只下载任务。
+
+操作步骤：
+
+1. 按 `F1`。
+2. 输入并选择 `Tasks: Run Task`。
+3. 选择 `Download Firmware (J-Link)`。
+
+这个任务会依次执行：
+
+1. `Build Firmware (GCC)`：先编译生成 `build/firmware.elf`。
+2. `J-Link Download Firmware`：启动 J-Link GDB Server，使用 `arm-none-eabi-gdb` 执行 `load` 下载 ELF。
+3. 下载完成后执行 reset 和 go，然后退出，不进入断点调试。
+
+也可以在 VS Code 终端中手动执行下载脚本：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\download.ps1 -Toolchain C:\SysGCC\arm-eabi\bin -JLinkGdbServer "C:\Program Files (x86)\SEGGER\JLink_V490e\JLinkGDBServerCL.exe"
+```
+
+注意：
+
+- 只下载任务不会停在 `main`。
+- 只下载任务不会打开 VS Code 调试界面。
+- J-Link 参数保持和当前调试任务一致：`STM32F407ZE`、`SWD`、`2000 kHz`、端口 `2331`。
+
+## 7. 调试前检查
 
 调试前确认：
 
@@ -126,7 +154,7 @@ build\firmware.map
 - `.vscode/settings.json` 中的两个路径正确。
 - VS Code 调试配置选择的是 `J-Link Debug STM32F407ZE (CDT GDB)`。
 
-## 7. 一键调试
+## 8. 一键调试
 
 1. 打开 VS Code 左侧 `Run and Debug`。
 2. 选择调试配置：
@@ -153,7 +181,7 @@ J-Link Debug STM32F407ZE (CDT GDB)
    - `monitor halt`
 7. 进入正常断点调试。
 
-## 8. 调试时建议观察的变量
+## 9. 调试时建议观察的变量
 
 可以在 Watch 窗口添加：
 
@@ -178,7 +206,7 @@ app::g_diagnostics.m_schedulerTimeouts
 - `ack_ok` 变为 `1`。
 - `scheduler_timeouts` 保持 `0`。
 
-## 9. 停止残留的 J-Link GDB Server
+## 10. 停止残留的 J-Link GDB Server
 
 如果调试异常退出，可能残留 `JLinkGDBServerCL.exe` 进程。可以手动停止：
 
@@ -192,7 +220,7 @@ app::g_diagnostics.m_schedulerTimeouts
 Get-Process JLinkGDBServerCL -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
-## 10. 常见问题
+## 11. 常见问题
 
 ### 10.1 F1 中找不到编译任务
 
@@ -275,7 +303,7 @@ F1 -> Tasks: Run Task -> Stop J-Link GDB Server
 
 如果仍然不行，可以在任务管理器中结束 `JLinkGDBServerCL.exe`。
 
-## 11. 迁移到另一台电脑的步骤
+## 12. 迁移到另一台电脑的步骤
 
 1. 拷贝整个工程目录。
 2. 在新电脑安装 GNU Arm Embedded Toolchain。

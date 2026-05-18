@@ -38,15 +38,7 @@
         "-File",
         "${workspaceFolder}\\tools\\start-jlink-gdbserver.ps1",
         "-JLinkGdbServer",
-        "${config:stm32.jlinkGdbServer}",
-        "-Device",
-        "STM32F407ZE",
-        "-Interface",
-        "SWD",
-        "-Speed",
-        "2000",
-        "-Port",
-        "2331"
+        "${config:stm32.jlinkGdbServer}"
       ],
       "presentation": {
         "reveal": "always",
@@ -88,15 +80,7 @@
         "-Toolchain",
         "${config:stm32.gccPath}",
         "-JLinkGdbServer",
-        "${config:stm32.jlinkGdbServer}",
-        "-Device",
-        "STM32F407ZE",
-        "-Interface",
-        "SWD",
-        "-Speed",
-        "2000",
-        "-Port",
-        "2331"
+        "${config:stm32.jlinkGdbServer}"
       ],
       "presentation": {
         "reveal": "always",

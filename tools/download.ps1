@@ -2,10 +2,10 @@ param(
     [string]$Toolchain = "",
     [string]$JLinkGdbServer = "",
     [string]$Firmware = "",
-    [string]$Device = "STM32F407ZE",
-    [string]$Interface = "SWD",
-    [string]$Speed = "2000",
-    [int]$Port = 2331
+    [string]$Device = "",
+    [string]$Interface = "",
+    [string]$Speed = "",
+    [int]$Port = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,9 +13,14 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 
 . (Join-Path $PSScriptRoot "vscode-settings.ps1")
+. (Join-Path $PSScriptRoot "jlink_config.ps1")
 
 $Toolchain = Resolve-ToolchainPath $Toolchain
 $JLinkGdbServer = Resolve-JLinkGdbServerPath $JLinkGdbServer
+$Device = Resolve-JLinkStringValue $Device "Device"
+$Interface = Resolve-JLinkStringValue $Interface "Interface"
+$Speed = Resolve-JLinkStringValue $Speed "Speed"
+$Port = Resolve-JLinkIntValue $Port "Port"
 
 if ([string]::IsNullOrWhiteSpace($Firmware)) {
     $Firmware = Join-Path $Root "build\firmware.elf"

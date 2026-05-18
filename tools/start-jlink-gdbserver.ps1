@@ -1,10 +1,10 @@
 param(
     [string]$JLinkGdbServer = "",
-    [string]$Device = "STM32F407ZE",
-    [string]$Interface = "SWD",
-    [string]$Speed = "2000",
-    [int]$Port = 2331,
-    [int]$TimeoutSeconds = 10
+    [string]$Device = "",
+    [string]$Interface = "",
+    [string]$Speed = "",
+    [int]$Port = 0,
+    [int]$TimeoutSeconds = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,8 +14,14 @@ $BuildDir = Join-Path $Root "build"
 New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
 
 . (Join-Path $PSScriptRoot "vscode-settings.ps1")
+. (Join-Path $PSScriptRoot "jlink_config.ps1")
 
 $JLinkGdbServer = Resolve-JLinkGdbServerPath $JLinkGdbServer
+$Device = Resolve-JLinkStringValue $Device "Device"
+$Interface = Resolve-JLinkStringValue $Interface "Interface"
+$Speed = Resolve-JLinkStringValue $Speed "Speed"
+$Port = Resolve-JLinkIntValue $Port "Port"
+$TimeoutSeconds = Resolve-JLinkIntValue $TimeoutSeconds "TimeoutSeconds"
 
 if (!(Test-Path $JLinkGdbServer)) {
     throw "J-Link GDB Server not found: $JLinkGdbServer"
